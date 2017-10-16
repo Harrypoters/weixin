@@ -52,9 +52,9 @@ class IndexController extends BaseController {
         //$postObj->Event = '';
         // gh_e79a177814ed
         //判断该数据包是否是订阅的事件推送
-        if( strtolower( $postObj->MsgType) == 'event'){
+//        if( strtolower( $postObj->MsgType) == 'event'){
             //如果是关注 subscribe 事件
-            if( strtolower($postObj->Event == 'subscribe') ) {
+//            if( strtolower($postObj->Event == 'subscribe') ) {
                 //回复用户消息(纯文本格式)
                 $toUser = $postObj->FromUserName;
                 $fromUser = $postObj->ToUserName;
@@ -70,7 +70,7 @@ class IndexController extends BaseController {
 							</xml>";
                 $info = sprintf($template, $toUser, $fromUser, $time, $msgType, $content);
                 echo $info;
-            }
-    }
+//            }
+//    }
 
 }
