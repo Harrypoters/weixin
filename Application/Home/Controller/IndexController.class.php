@@ -5,9 +5,11 @@ namespace Home\Controller;
 use Common\Common\Controller\BaseController;
 
 class IndexController extends BaseController {
-    public function __construct(){
 
+    public function __construct(){
+        define("TOKEN", "weixin");
     }
+
 
     public function index(){
         //获得参数 signature nonce token timestamp echostr
@@ -33,44 +35,103 @@ class IndexController extends BaseController {
 
     public function reponseMsg()
     {
-        //1.获取到微信推送过来post数据（xml格式）
-        $postArr = $GLOBALS['HTTP_RAW_POST_DATA'];
-        //2.处理消息类型，并设置回复类型和内容
-        /*<xml>
-        <ToUserName><![CDATA[toUser]]></ToUserName>
-        <FromUserName><![CDATA[FromUser]]></FromUserName>
-        <CreateTime>123456789</CreateTime>
-        <MsgType><![CDATA[event]]></MsgType>
-        <Event><![CDATA[subscribe]]></Event>
-        </xml>*/
+        $postStr = $GLOBALS["HTTP_RAW_POST_DATA"];
 
-        $postObj = simplexml_load_string( $postArr );
-        //$postObj->ToUserName = '';
-        //$postObj->FromUserName = '';
-        //$postObj->CreateTime = '';
-        //$postObj->MsgType = '';
-        //$postObj->Event = '';
-        // gh_e79a177814ed
-        //判断该数据包是否是订阅的事件推送
-//        if( strtolower( $postObj->MsgType) == 'event'){
-            //如果是关注 subscribe 事件
-//            if( strtolower($postObj->Event == 'subscribe') ) {
-                //回复用户消息(纯文本格式)
-                $toUser = $postObj->FromUserName;
-                $fromUser = $postObj->ToUserName;
-                $time = time();
-                $msgType = 'text';
-                $content = '欢迎关注我们的微信公众账号' . $postObj->FromUserName . '-' . $postObj->ToUserName;
-                $template = "<xml>
-							<ToUserName><![CDATA[%s]]></ToUserName>
-							<FromUserName><![CDATA[%s]]></FromUserName>
-							<CreateTime>%s</CreateTime>
-							<MsgType><![CDATA[%s]]></MsgType>
-							<Content><![CDATA[%s]]></Content>
-							</xml>";
-                $info = sprintf($template, $toUser, $fromUser, $time, $msgType, $content);
-                echo $info;
-//            }
-//    }
+        //extract post data
+        if (!empty($postStr)) {
+
+            $postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
+            $RX_TYPE = trim($postObj->MsgType);
+
+            switch ($RX_TYPE) {
+                case "text":
+                    $resultStr = $this->handleText($postObj);
+                    break;
+                case "event":
+                    $resultStr = $this->handleEvent($postObj);
+                    break;
+                default:
+                    $resultStr = "Unknow msg type: " . $RX_TYPE;
+                    break;
+            }
+            echo $resultStr;
+        } else {
+            echo "";
+            exit;
+        }
+    }
+    public function handleText($postObj)
+    {
+        $fromUsername = $postObj->FromUserName;
+        $toUsername = $postObj->ToUserName;
+        $keyword = trim($postObj->Content);
+        $time = time();
+        $textTpl = "<xml>
+                    <ToUserName><![CDATA[%s]]></ToUserName>
+                    <FromUserName><![CDATA[%s]]></FromUserName>
+                    <CreateTime>%s</CreateTime>
+                    <MsgType><![CDATA[%s]]></MsgType>
+                    <Content><![CDATA[%s]]></Content>
+                    <FuncFlag>0</FuncFlag>
+                    </xml>";
+        if(!empty( $keyword ))
+        {
+            $msgType = "text";
+            $contentStr = "Welcome to wechat world!";
+            $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
+            echo $resultStr;
+        }else{
+            echo "Input something...";
+        }
+    }
+
+    public function handleEvent($object)
+    {
+        $contentStr = "";
+        switch ($object->Event)
+        {
+            case "subscribe":
+                $contentStr = "感谢您关注【卓锦苏州】"."\n"."微信号：zhuojinsz"."\n"."卓越锦绣，名城苏州，我们为您提供苏州本地生活指南，苏州相关信息查询，做最好的苏州微信平台。"."\n"."目前平台功能如下："."\n"."【1】 查天气，如输入：苏州天气"."\n"."【2】 查公交，如输入：苏州公交178"."\n"."【3】 翻译，如输入：翻译I love you"."\n"."【4】 苏州信息查询，如输入：苏州观前街"."\n"."更多内容，敬请期待...";
+                break;
+            default :
+                $contentStr = "Unknow Event: ".$object->Event;
+                break;
+        }
+        $resultStr = $this->responseText($object, $contentStr);
+        return $resultStr;
+    }
+
+    public function responseText($object, $content, $flag=0)
+    {
+        $textTpl = "<xml>
+                    <ToUserName><![CDATA[%s]]></ToUserName>
+                    <FromUserName><![CDATA[%s]]></FromUserName>
+                    <CreateTime>%s</CreateTime>
+                    <MsgType><![CDATA[text]]></MsgType>
+                    <Content><![CDATA[%s]]></Content>
+                    <FuncFlag>%d</FuncFlag>
+                    </xml>";
+        $resultStr = sprintf($textTpl, $object->FromUserName, $object->ToUserName, time(), $content, $flag);
+        return $resultStr;
+    }
+
+    private function checkSignature()
+    {
+        $signature = $_GET["signature"];
+        $timestamp = $_GET["timestamp"];
+        $nonce = $_GET["nonce"];
+
+        $token = TOKEN;
+        $tmpArr = array($token, $timestamp, $nonce);
+        sort($tmpArr);
+        $tmpStr = implode( $tmpArr );
+        $tmpStr = sha1( $tmpStr );
+
+        if( $tmpStr == $signature ){
+            return true;
+        }else{
+            return false;
+        }
+    }
 
 }
