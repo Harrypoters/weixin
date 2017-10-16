@@ -10,6 +10,7 @@ class IndexController extends BaseController {
     }
 
     public function index(){
+        var_dump('sd');exit;
         //获得参数 signature nonce token timestamp echostr
         $nonce     = $_GET['nonce'];
         $token     = 'weixin';
