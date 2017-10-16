@@ -38,6 +38,15 @@ class IndexController extends BaseController
 
     public function responseMsg()
     {
+        $textTpl = "<xml>
+            <ToUserName>1</ToUserName>
+            <FromUserName>12</FromUserName>
+            <CreateTime>123</CreateTime>
+            <MsgType>1234</MsgType>
+            <Content>12345></Content>
+            <FuncFlag>0</FuncFlag>
+            </xml>";
+        exit;
         //get post data, May be due to the different environments
         $postStr = $GLOBALS["HTTP_RAW_POST_DATA"];
         //extract post data
