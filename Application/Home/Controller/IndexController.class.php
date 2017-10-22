@@ -6,7 +6,7 @@
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
-// | Author: 麦当苗儿 <zuojiazi@vip.qq.com> <http://www.zjzit.cn>
+// | Author: 萧风 <zuojiazi@vip.qq.com> <http://www.zjzit.cn>
 // +----------------------------------------------------------------------
 
 namespace Home\Controller;
@@ -96,7 +96,7 @@ class IndexController extends Controller{
             case Wechat::MSG_TYPE_EVENT:
                 switch ($data['Event']) {
                     case Wechat::MSG_EVENT_SUBSCRIBE:
-                        $wechat->replyText('欢迎您关注麦当苗儿公众平台！回复“文本”，“图片”，“语音”，“视频”，“音乐”，“图文”，“多图文”查看相应的信息！');
+                        $wechat->replyText('欢迎您关注萧风公众平台！回复“文本”，“图片”，“语音”，“视频”，“音乐”，“图文”，“多图文”查看相应的信息！');
                         break;
 
                     case Wechat::MSG_EVENT_UNSUBSCRIBE:
@@ -104,7 +104,7 @@ class IndexController extends Controller{
                         break;
 
                     default:
-                        $wechat->replyText("欢迎访问麦当苗儿公众平台！您的事件类型：{$data['Event']}，EventKey：{$data['EventKey']}");
+                        $wechat->replyText("欢迎访问萧风公众平台！您的事件类型：{$data['Event']}，EventKey：{$data['EventKey']}");
                         break;
                 }
                 break;
@@ -112,7 +112,7 @@ class IndexController extends Controller{
             case Wechat::MSG_TYPE_TEXT:
                 switch ($data['Content']) {
                     case '文本':
-                        $wechat->replyText('欢迎访问麦当苗儿公众平台，这是文本回复的内容！');
+                        $wechat->replyText('欢迎访问萧风公众平台，这是文本回复的内容！');
                         break;
 
                     case '图片':
@@ -130,7 +130,9 @@ class IndexController extends Controller{
                     case '视频':
                         //$media_id = $this->upload('video');
                         $media_id = '1J03FqvqN_jWX6xe8F-VJn9Qv0O96rcQgITYPxEIXiQ';
-                        $wechat->replyVideo($media_id, '视频标题', '视频描述信息。。。');
+                        $news_video = ['1J03FqvqN_jWX6xe8F-VJn9Qv0O96rcQgITYPxEIXiQ', '视频标题', '视频描述信息。。。'];
+//                        $wechat->replyVideo($media_id, '视频标题', '视频描述信息。。。');
+                        $wechat->replyVideo($news_video);
                         break;
 
                     case '音乐':
@@ -166,7 +168,7 @@ class IndexController extends Controller{
                         break;
                     
                     default:
-                        $wechat->replyText("欢迎访问麦当苗儿公众平台！您输入的内容是：{$data['Content']}");
+                        $wechat->replyText("欢迎访问萧风公众平台！您输入的内容是：{$data['Content']}");
                         break;
                 }
                 break;

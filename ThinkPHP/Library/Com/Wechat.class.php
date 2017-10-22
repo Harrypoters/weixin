@@ -201,8 +201,11 @@ class Wechat {
      * @param  string $title       视频标题
      * @param  string $discription 视频描述
      */
-    public function replyVideo($media_id, $title, $discription){
-        return $this->response(func_get_args(), self::MSG_TYPE_VIDEO);
+//    public function replyVideo($media_id, $title, $discription){
+//        return $this->response(func_get_args(), self::MSG_TYPE_VIDEO);
+//    }
+    public function replyVideo($news_video){
+        return $this->response($news_video, self::MSG_TYPE_VIDEO);
     }
 
     /**
