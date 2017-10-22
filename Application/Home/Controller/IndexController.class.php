@@ -4,137 +4,268 @@ namespace Home\Controller;
 
 use Common\Common\Controller\BaseController;
 
-class IndexController extends BaseController
-{
+class IndexController extends BaseController {
+    public function __construct(){
 
-    public function __construct()
-    {
-        define("TOKEN", "weixin");
     }
 
-
-    public function index()
-    {
+    public function index(){
         //获得参数 signature nonce token timestamp echostr
-        $nonce = $_GET['nonce'];
-        $token = 'weixin';
+        $nonce     = $_GET['nonce'];
+        $token     = 'xiaofeng';
         $timestamp = $_GET['timestamp'];
-        $echostr = $_GET['echostr'];
+        $echostr   = $_GET['echostr'];
         $signature = $_GET['signature'];
         //形成数组，然后按字典序排序
-        $array = [];
+        $array = array();
         $array = array($nonce, $timestamp, $token);
         sort($array);
-        //拼接成字符串,sha1加密  ，然后与signature进行校验
-        $str = sha1(implode($array));
-        if ($str == $signature && $echostr) {
+        //拼接成字符串,sha1加密 ，然后与signature进行校验
+        $str = sha1( implode( $array ) );
+        if( $str  == $signature && $echostr ){
             //第一次接入weixin api接口的时候
-            echo $echostr;
+            echo  $echostr;
             exit;
-        } else {
+        }else{
             $this->reponseMsg();
         }
     }
+    // 接收事件推送并回复
+    public function reponseMsg(){
+        //1.获取到微信推送过来post数据（xml格式）
+        $postArr = $GLOBALS['HTTP_RAW_POST_DATA'];
+        //2.处理消息类型，并设置回复类型和内容
+        /*<xml>
+<ToUserName><![CDATA[toUser]]></ToUserName>
+<FromUserName><![CDATA[FromUser]]></FromUserName>
+<CreateTime>123456789</CreateTime>
+<MsgType><![CDATA[event]]></MsgType>
+<Event><![CDATA[subscribe]]></Event>
+</xml>*/
+        $postObj = simplexml_load_string( $postArr );
+        //$postObj->ToUserName = '';
+        //$postObj->FromUserName = '';
+        //$postObj->CreateTime = '';
+        //$postObj->MsgType = '';
+        //$postObj->Event = '';
+        // gh_e79a177814ed
+        //判断该数据包是否是订阅的事件推送
+        if( strtolower( $postObj->MsgType) == 'event'){
+            //如果是关注 subscribe 事件
+            if( strtolower($postObj->Event == 'subscribe') ){
+                //回复用户消息(纯文本格式)
+                $toUser   = $postObj->FromUserName;
+                $fromUser = $postObj->ToUserName;
+                $time     = time();
+                $msgType  =  'text';
+                $content  = '欢迎关注我们的微信公众账号'.$postObj->FromUserName.'-'.$postObj->ToUserName;
+                $template = "<xml>
+							<ToUserName><![CDATA[%s]]></ToUserName>
+							<FromUserName><![CDATA[%s]]></FromUserName>
+							<CreateTime>%s</CreateTime>
+							<MsgType><![CDATA[%s]]></MsgType>
+							<Content><![CDATA[%s]]></Content>
+							</xml>";
+                $info     = sprintf($template, $toUser, $fromUser, $time, $msgType, $content);
+                echo $info;
+                /*<xml>
+                <ToUserName><![CDATA[toUser]]></ToUserName>
+                <FromUserName><![CDATA[fromUser]]></FromUserName>
+                <CreateTime>12345678</CreateTime>
+                <MsgType><![CDATA[text]]></MsgType>
+                <Content><![CDATA[你好]]></Content>
+                </xml>*/
 
-    public function responseMsg()
-    {
-        $textTpl = "<xml>
-            <ToUserName>1</ToUserName>
-            <FromUserName>12</FromUserName>
-            <CreateTime>123</CreateTime>
-            <MsgType>1234</MsgType>
-            <Content>12345></Content>
-            <FuncFlag>0</FuncFlag>
-            </xml>";
-        exit;
-        //get post data, May be due to the different environments
-        $postStr = $GLOBALS["HTTP_RAW_POST_DATA"];
-        //extract post data
-        if (!emptyempty($postStr)) {
-            $postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
-            $fromUsername = $postObj->FromUserName;
-            $toUsername = $postObj->ToUserName;
-            $keyword = trim($postObj->Content);
-            $time = time();
-            $msgType = "text";
-            $textTpl = "<xml>
-    <ToUserName><![CDATA[%s]]></ToUserName>
-    <FromUserName><![CDATA[%s]]></FromUserName>
-    <CreateTime>%s</CreateTime>
-    <MsgType><![CDATA[%s]]></MsgType>
-    <Content><![CDATA[%s]]></Content>
-    <FuncFlag>0</FuncFlag>
-    </xml>";
-            if (!emptyempty($keyword)) {
-                $contentStr = $this->keyrep($keyword);
-                if (emptyempty($contentStr)) {
-                    $contentStr = "你是故意的吧，没文化真可怕";//你是故意的吧，没文化真可怕;
-                }
-                //$contentStr = @iconv('UTF-8','gb2312',$keyword);
-                $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
-                echo $resultStr;
-            } else {
-                $contentStr = '没文化真可怕，居然不会打字！';//$this->keyrep($keyword);
-                //$contentStr = @iconv('UTF-8','gb2312',$keyword);
-                $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
-                echo $resultStr;
+
             }
-        } else {
-            echo "";
-            exit;
+        }
+
+        //当微信用户发送imooc，公众账号回复‘imooc is very good'
+        /*<xml>
+<ToUserName><![CDATA[toUser]]></ToUserName>
+<FromUserName><![CDATA[fromUser]]></FromUserName>
+<CreateTime>12345678</CreateTime>
+<MsgType><![CDATA[text]]></MsgType>
+<Content><![CDATA[你好]]></Content>
+</xml>*/
+        /*if(strtolower($postObj->MsgType) == 'text'){
+            switch( trim($postObj->Content) ){
+                case 1:
+                    $content = '您输入的数字是1';
+                break;
+                case 2:
+                    $content = '您输入的数字是2';
+                break;
+                case 3:
+                    $content = '您输入的数字是3';
+                break;
+                case 4:
+                    $content = "<a href='http://www.imooc.com'>慕课</a>";
+                break;
+                case '英文':
+                    $content = 'imooc is ok';
+                break;
+
+            }
+                $template = "<xml>
+<ToUserName><![CDATA[%s]]></ToUserName>
+<FromUserName><![CDATA[%s]]></FromUserName>
+<CreateTime>%s</CreateTime>
+<MsgType><![CDATA[%s]]></MsgType>
+<Content><![CDATA[%s]]></Content>
+</xml>";
+//注意模板中的中括号 不能少 也不能多
+                $fromUser = $postObj->ToUserName;
+                $toUser   = $postObj->FromUserName;
+                $time     = time();
+                // $content  = '18723180099';
+                $msgType  = 'text';
+                echo sprintf($template, $toUser, $fromUser, $time, $msgType, $content);
+
         }
     }
-
-    private function checkSignature()
-    {
-        $signature = $_GET["signature"];
-        $timestamp = $_GET["timestamp"];
-        $nonce = $_GET["nonce"];
-        $token = TOKEN;
-        $tmpArr = array($token, $timestamp, $nonce);
-        sort($tmpArr);
-        $tmpStr = implode($tmpArr);
-        $tmpStr = sha1($tmpStr);
-        if ($tmpStr == $signature) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    function keyrep($key)
-    {
-        //return $key;
-        if ($key == '嗨' || $key == '在吗' || $key == '你好') {
-            $mt = mt_rand(1, 17);
-            $array = array(1 => '自杀中，稍后再说...', 2 => '有事找我请大叫！', 3 => '我正在裸奔，已奔出服务区', 4 => '我现在位置：WC； 姿势：下蹲； 脸部：抽搐； 状态：用力中。。。。', 5 => '去吃饭了，如果你是帅哥，请一会联系我，如果你是美女...............就算你是美女，我也要先吃饱肚子啊', 6 => '
-洗澡中~谢绝旁观！！^_^0', 7 => '有熊出?]，我去诱捕，尽快回来。', 8 => '你好，我是500，请问你是250吗？', 9 => '喂！乱码啊，再发', 10 => '
-不是我不理你，只是时间难以抗拒！', 11 => '你刚才说什么，我没看清楚，请再说一遍！', 12 => '发多几次啊~~~发多几次我就回你。', 13 => '此人已死，有事烧纸！', 14 => '乖，不急哦…', 15 => '你好.我去杀几个人,很快回来.', 16 => '本人已成仙?有事请发烟?佛说有烟没火成不了正果?有火没烟成不了仙。', 17 => '
-你要和我说话？你真的要和我说话？你确定自己想说吗？你一定非说不可吗？那你说吧，这是自动回复，反正我看不见其实我在~就是不回你拿我怎么着？'
+*/
+        //用户发送tuwen1关键字的时候，回复一个单图文
+        if( strtolower($postObj->MsgType) == 'text' && trim($postObj->Content)=='tuwen2' ){
+            $toUser = $postObj->FromUserName;
+            $fromUser = $postObj->ToUserName;
+            $arr = array(
+                array(
+                    'title'=>'imooc',
+                    'description'=>"imooc is very cool",
+                    'picUrl'=>'http://www.imooc.com/static/img/common/logo.png',
+                    'url'=>'http://www.imooc.com',
+                ),
+                array(
+                    'title'=>'hao123',
+                    'description'=>"hao123 is very cool",
+                    'picUrl'=>'https://www.baidu.com/img/bdlogo.png',
+                    'url'=>'http://www.hao123.com',
+                ),
+                array(
+                    'title'=>'qq',
+                    'description'=>"qq is very cool",
+                    'picUrl'=>'http://www.imooc.com/static/img/common/logo.png',
+                    'url'=>'http://www.qq.com',
+                ),
             );
-            return $array[$mt];
-        }
-        if ($key == '靠' || $key == '啊' || $key == '阿') {
-            $mt = mt_rand(1, 19);
-            $array = array(1 => '人之初?性本善?玩心眼?都滚蛋。', 2 => '今后的路?我希望你能自己好好走下去?而我 坐车', 3 => '笑话是什么?就是我现在对你说的话。', 4 => '人人都说我丑?其实我只是美得不明显。', 5 => 'A;猪是怎么死的?B;你还没死我怎么知道', 6 => '
-奥巴马已经干掉和他同姓的两个人?奥特曼你要小心了。 ', 7 => '有的人活着?他已经死了?有的人活着?他早该死了。', 8 => '"妹妹你坐船头?哥哥我岸上走"据说很傻逼的人看到都是唱出来的。', 9 => '我这辈子只有两件事不会?这也不会?那也不会。', 10 => '
-过了这个村?没了这个店?那是因为有分店。', 11 => '我以为你只是个球?没想到?你真是个球。', 12 => '你终于来啦，我找你N年了，去火星干什么了？我现在去冥王星，回头跟你说个事，别走开啊', 13 => '你有权保持沉默，你所说的一切都将被作为存盘记录。你可以请代理服务器，如果请不起网络会为你分配一个。', 14 => '本人正在被国际刑警组织全球范围内通缉，如果您有此人的消息，请拨打当地报警电话', 15 => '洗澡中~谢绝旁观！！^_^0', 16 => '嘀，这里是移动秘书， 美眉请再发一次，我就与你联系；姐姐请再发两次，我就与你联系；哥哥、弟弟就不要再发了，因为发了也不和你联系！', 17 => '
-其实我在~就是不回你拿我怎么着？', 18 => '你刚才说什么，我没看清楚，请再说一遍！', 19 => '乖，不急。。。');
-            return $array[$mt];
-        }
-        if ($key == '请问') {
-            $mt = mt_rand(1, 5);
-            $array = array(1 => '"我脸油吗"反光？?反正我不清楚', 2 => '走，我请你吃饭', 3 => '此人已死，有事烧纸！', 4 => '喂！什么啊！乱码啊，再发', 5 => '笑话是什么？?就是我现在对你说的话。');
-            return $array[$mt];
-        }
-        return "";
+            $template = "<xml>
+						<ToUserName><![CDATA[%s]]></ToUserName>
+						<FromUserName><![CDATA[%s]]></FromUserName>
+						<CreateTime>%s</CreateTime>
+						<MsgType><![CDATA[%s]]></MsgType>
+						<ArticleCount>".count($arr)."</ArticleCount>
+						<Articles>";
+            foreach($arr as $k=>$v){
+                $template .="<item>
+							<Title><![CDATA[".$v['title']."]]></Title> 
+							<Description><![CDATA[".$v['description']."]]></Description>
+							<PicUrl><![CDATA[".$v['picUrl']."]]></PicUrl>
+							<Url><![CDATA[".$v['url']."]]></Url>
+							</item>";
+            }
+
+            $template .="</Articles>
+						</xml> ";
+            echo sprintf($template, $toUser, $fromUser, time(), 'news');
+
+            //注意：进行多图文发送时，子图文个数不能超过10个
+        }else{
+            switch( trim($postObj->Content) ){
+                case 1:
+                    $content = '您输入的数字是1';
+                    break;
+                case 2:
+                    $content = '您输入的数字是2';
+                    break;
+                case 3:
+                    $content = '您输入的数字是3';
+                    break;
+                case 4:
+                    $content = "<a href='http://www.imooc.com'>慕课</a>";
+                    break;
+                case '英文':
+                    $content = 'imooc is ok';
+                    break;
+            }
+            $template = "<xml>
+                            <ToUserName><![CDATA[%s]]></ToUserName>
+                            <FromUserName><![CDATA[%s]]></FromUserName>
+                            <CreateTime>%s</CreateTime>
+                            <MsgType><![CDATA[%s]]></MsgType>
+                            <Content><![CDATA[%s]]></Content>
+                        </xml>";
+            //注意模板中的中括号 不能少 也不能多
+            $fromUser = $postObj->ToUserName;
+            $toUser   = $postObj->FromUserName;
+            $time     = time();
+            // $content  = '18723180099';
+            $msgType  = 'text';
+            echo sprintf($template, $toUser, $fromUser, $time, $msgType, $content);
+
+        }//if end
+    }//reponseMsg end
+
+    function http_curl(){
+        //获取imooc
+        //1.初始化curl
+        $ch = curl_init();
+        $url = 'http://www.baidu.com';
+        //2.设置curl的参数
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        //3.采集
+        $output = curl_exec($ch);
+        //4.关闭
+        curl_close($ch);
+        var_dump($output);
+
+//        $ch =curl_init();
+//        curl_setopt($ch,CURLOPT_URL,'www.baidu.com');
+//        curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+//        curl_setopt($ch,CURLOPT_HEADER,0);
+//        $output = curl_exec($ch);
+//        curl_close($ch);
+//        echo $output;
     }
 
-    function keylist()
-    {
-        $array = array(1 => '嗨', 2 => '你好', 3 => '靠', 4 => '在吗', 5 => '请问');
+    function getWxAccessToken(){
+        //1.请求url地址
+        $appid = 'wx7ec8b0f510cb99d5';
+        $appsecret =  'L1vSKETAB28Si0dgzkfqnQwGx2PX6kTgBv4tpAYsb7c';
+        $url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=".$appid."&secret=".$appsecret;
+        //2初始化
+        $ch = curl_init();
+        //3.设置参数
+        curl_setopt($ch , CURLOPT_URL, $url);
+        curl_setopt($ch , CURLOPT_RETURNTRANSFER, 1);
+        //4.调用接口
+        $res = curl_exec($ch);
+        //5.关闭curl
+        curl_close( $ch );
+        if( curl_errno($ch) ){
+            var_dump( curl_error($ch) );
+        }
+        $arr = json_decode($res, true);
+        var_dump( $arr );
     }
 
+    function getWxServerIp(){
+        $accessToken = "6vOlKOh7r5uWk_ZPCl3DS36NEK93VIH9Q9tacreuxJ5WzcVc235w_9zONy75NoO11gC9P0o4FBVxwvDiEtsdX6ZRFR0Lfs_ymkb8Bf6kRfo";
+        $url = "https://api.weixin.qq.com/cgi-bin/getcallbackip?access_token=".$accessToken;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,$url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+        $res = curl_exec($ch);
+        curl_close($ch);
+        if(curl_errno($ch)){
+            var_dump(curl_error($ch));
+        }
+        $arr = json_decode($res,true);
+        echo "<pre>";
+        var_dump( $arr );
+        echo "</pre>";
 
 
+    }
 }
