@@ -984,7 +984,7 @@ class Model {
                 }
                 if(isset($cache)){
                     S($key,$array,$cache);
-                }
+                }                
                 return $array;
             }
         }

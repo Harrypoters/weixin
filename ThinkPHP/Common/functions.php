@@ -289,9 +289,7 @@ function I($name,$default='',$filter=null,$datas=null) {
         	break;
         case 'put'     :   
         	if(is_null($_PUT)){
-                $in = file_get_contents('php://input');
-            	parse_str($in, $_PUT);
-                $_PUT = (array)$_PUT + (array)json_decode($in, true);
+            	parse_str(file_get_contents('php://input'), $_PUT);
         	}
         	$input 	=	$_PUT;        
         	break;

@@ -1,271 +1,234 @@
 <?php
+// +----------------------------------------------------------------------
+// | ThinkPHP [ WE CAN DO IT JUST THINK IT ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 2006-2014 http://thinkphp.cn All rights reserved.
+// +----------------------------------------------------------------------
+// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
+// +----------------------------------------------------------------------
+// | Author: 麦当苗儿 <zuojiazi@vip.qq.com> <http://www.zjzit.cn>
+// +----------------------------------------------------------------------
 
 namespace Home\Controller;
 
-use Common\Common\Controller\BaseController;
+use Think\Controller;
+use Com\Wechat;
+use Com\WechatAuth;
 
-class IndexController extends BaseController {
-    public function __construct(){
+class IndexController extends Controller{
+    /**
+     * 微信消息接口入口
+     * 所有发送到微信的消息都会推送到该操作
+     * 所以，微信公众平台后台填写的api地址则为该操作的访问地址
+     */
+    public function index($id = ''){
+        //调试
+        try{
+            $appid = 'wx7ec8b0f510cb99d5'; //AppID(应用ID)
+            $token = 'xiaofeng'; //微信后台填写的TOKEN
+            $crypt = 'Gj1CWO6qk7VxwF0Rb8DVurqANCVudr2xmgcKjj1fPH2'; //消息加密KEY（EncodingAESKey）
+            
+            /* 加载微信SDK */
+            $wechat = new Wechat($token, $appid, $crypt);
+            
+            /* 获取请求信息 */
+            $data = $wechat->request();
 
-    }
+            if($data && is_array($data)){
+                /**
+                 * 你可以在这里分析数据，决定要返回给用户什么样的信息
+                 * 接受到的信息类型有10种，分别使用下面10个常量标识
+                 * Wechat::MSG_TYPE_TEXT       //文本消息
+                 * Wechat::MSG_TYPE_IMAGE      //图片消息
+                 * Wechat::MSG_TYPE_VOICE      //音频消息
+                 * Wechat::MSG_TYPE_VIDEO      //视频消息
+                 * Wechat::MSG_TYPE_SHORTVIDEO //视频消息
+                 * Wechat::MSG_TYPE_MUSIC      //音乐消息
+                 * Wechat::MSG_TYPE_NEWS       //图文消息（推送过来的应该不存在这种类型，但是可以给用户回复该类型消息）
+                 * Wechat::MSG_TYPE_LOCATION   //位置消息
+                 * Wechat::MSG_TYPE_LINK       //连接消息
+                 * Wechat::MSG_TYPE_EVENT      //事件消息
+                 *
+                 * 事件消息又分为下面五种
+                 * Wechat::MSG_EVENT_SUBSCRIBE    //订阅
+                 * Wechat::MSG_EVENT_UNSUBSCRIBE  //取消订阅
+                 * Wechat::MSG_EVENT_SCAN         //二维码扫描
+                 * Wechat::MSG_EVENT_LOCATION     //报告位置
+                 * Wechat::MSG_EVENT_CLICK        //菜单点击
+                 */
 
-    public function index(){
-        //获得参数 signature nonce token timestamp echostr
-        $nonce     = $_GET['nonce'];
-        $token     = 'xiaofeng';
-        $timestamp = $_GET['timestamp'];
-        $echostr   = $_GET['echostr'];
-        $signature = $_GET['signature'];
-        //形成数组，然后按字典序排序
-        $array = array();
-        $array = array($nonce, $timestamp, $token);
-        sort($array);
-        //拼接成字符串,sha1加密 ，然后与signature进行校验
-        $str = sha1( implode( $array ) );
-        if( $str  == $signature && $echostr ){
-            //第一次接入weixin api接口的时候
-            echo  $echostr;
-            exit;
-        }else{
-            $this->reponseMsg();
-        }
-    }
-    // 接收事件推送并回复
-    public function reponseMsg(){
-        //1.获取到微信推送过来post数据（xml格式）
-        $postArr = $GLOBALS['HTTP_RAW_POST_DATA'];
-        //2.处理消息类型，并设置回复类型和内容
-        /*<xml>
-<ToUserName><![CDATA[toUser]]></ToUserName>
-<FromUserName><![CDATA[FromUser]]></FromUserName>
-<CreateTime>123456789</CreateTime>
-<MsgType><![CDATA[event]]></MsgType>
-<Event><![CDATA[subscribe]]></Event>
-</xml>*/
-        $postObj = simplexml_load_string( $postArr );
-        //$postObj->ToUserName = '';
-        //$postObj->FromUserName = '';
-        //$postObj->CreateTime = '';
-        //$postObj->MsgType = '';
-        //$postObj->Event = '';
-        // gh_e79a177814ed
-        //判断该数据包是否是订阅的事件推送
-        if( strtolower( $postObj->MsgType) == 'event'){
-            //如果是关注 subscribe 事件
-            if( strtolower($postObj->Event == 'subscribe') ){
-                //回复用户消息(纯文本格式)
-                $toUser   = $postObj->FromUserName;
-                $fromUser = $postObj->ToUserName;
-                $time     = time();
-                $msgType  =  'text';
-                $content  = '欢迎关注我们的微信公众账号'.$postObj->FromUserName.'-'.$postObj->ToUserName;
-                $template = "<xml>
-							<ToUserName><![CDATA[%s]]></ToUserName>
-							<FromUserName><![CDATA[%s]]></FromUserName>
-							<CreateTime>%s</CreateTime>
-							<MsgType><![CDATA[%s]]></MsgType>
-							<Content><![CDATA[%s]]></Content>
-							</xml>";
-                $info     = sprintf($template, $toUser, $fromUser, $time, $msgType, $content);
-                echo $info;
-                /*<xml>
-                <ToUserName><![CDATA[toUser]]></ToUserName>
-                <FromUserName><![CDATA[fromUser]]></FromUserName>
-                <CreateTime>12345678</CreateTime>
-                <MsgType><![CDATA[text]]></MsgType>
-                <Content><![CDATA[你好]]></Content>
-                </xml>*/
+                //记录微信推送过来的数据
+                file_put_contents('./data.json', json_encode($data));
 
+                /* 响应当前请求(自动回复) */
+                //$wechat->response($content, $type);
 
+                /**
+                 * 响应当前请求还有以下方法可以使用
+                 * 具体参数格式说明请参考文档
+                 * 
+                 * $wechat->replyText($text); //回复文本消息
+                 * $wechat->replyImage($media_id); //回复图片消息
+                 * $wechat->replyVoice($media_id); //回复音频消息
+                 * $wechat->replyVideo($media_id, $title, $discription); //回复视频消息
+                 * $wechat->replyMusic($title, $discription, $musicurl, $hqmusicurl, $thumb_media_id); //回复音乐消息
+                 * $wechat->replyNews($news, $news1, $news2, $news3); //回复多条图文消息
+                 * $wechat->replyNewsOnce($title, $discription, $url, $picurl); //回复单条图文消息
+                 * 
+                 */
+                
+                //执行Demo
+                $this->demo($wechat, $data);
             }
+        } catch(\Exception $e){
+            file_put_contents('./error.json', json_encode($e->getMessage()));
         }
-
-        //当微信用户发送imooc，公众账号回复‘imooc is very good'
-        /*<xml>
-<ToUserName><![CDATA[toUser]]></ToUserName>
-<FromUserName><![CDATA[fromUser]]></FromUserName>
-<CreateTime>12345678</CreateTime>
-<MsgType><![CDATA[text]]></MsgType>
-<Content><![CDATA[你好]]></Content>
-</xml>*/
-        /*if(strtolower($postObj->MsgType) == 'text'){
-            switch( trim($postObj->Content) ){
-                case 1:
-                    $content = '您输入的数字是1';
-                break;
-                case 2:
-                    $content = '您输入的数字是2';
-                break;
-                case 3:
-                    $content = '您输入的数字是3';
-                break;
-                case 4:
-                    $content = "<a href='http://www.imooc.com'>慕课</a>";
-                break;
-                case '英文':
-                    $content = 'imooc is ok';
-                break;
-
-            }
-                $template = "<xml>
-<ToUserName><![CDATA[%s]]></ToUserName>
-<FromUserName><![CDATA[%s]]></FromUserName>
-<CreateTime>%s</CreateTime>
-<MsgType><![CDATA[%s]]></MsgType>
-<Content><![CDATA[%s]]></Content>
-</xml>";
-//注意模板中的中括号 不能少 也不能多
-                $fromUser = $postObj->ToUserName;
-                $toUser   = $postObj->FromUserName;
-                $time     = time();
-                // $content  = '18723180099';
-                $msgType  = 'text';
-                echo sprintf($template, $toUser, $fromUser, $time, $msgType, $content);
-
-        }
-    }
-*/
-        //用户发送tuwen1关键字的时候，回复一个单图文
-        if( strtolower($postObj->MsgType) == 'text' && trim($postObj->Content)=='tuwen2' ){
-            $toUser = $postObj->FromUserName;
-            $fromUser = $postObj->ToUserName;
-            $arr = array(
-                array(
-                    'title'=>'imooc',
-                    'description'=>"imooc is very cool",
-                    'picUrl'=>'http://www.imooc.com/static/img/common/logo.png',
-                    'url'=>'http://www.imooc.com',
-                ),
-                array(
-                    'title'=>'hao123',
-                    'description'=>"hao123 is very cool",
-                    'picUrl'=>'https://www.baidu.com/img/bdlogo.png',
-                    'url'=>'http://www.hao123.com',
-                ),
-                array(
-                    'title'=>'qq',
-                    'description'=>"qq is very cool",
-                    'picUrl'=>'http://www.imooc.com/static/img/common/logo.png',
-                    'url'=>'http://www.qq.com',
-                ),
-            );
-            $template = "<xml>
-						<ToUserName><![CDATA[%s]]></ToUserName>
-						<FromUserName><![CDATA[%s]]></FromUserName>
-						<CreateTime>%s</CreateTime>
-						<MsgType><![CDATA[%s]]></MsgType>
-						<ArticleCount>".count($arr)."</ArticleCount>
-						<Articles>";
-            foreach($arr as $k=>$v){
-                $template .="<item>
-							<Title><![CDATA[".$v['title']."]]></Title> 
-							<Description><![CDATA[".$v['description']."]]></Description>
-							<PicUrl><![CDATA[".$v['picUrl']."]]></PicUrl>
-							<Url><![CDATA[".$v['url']."]]></Url>
-							</item>";
-            }
-
-            $template .="</Articles>
-						</xml> ";
-            echo sprintf($template, $toUser, $fromUser, time(), 'news');
-
-            //注意：进行多图文发送时，子图文个数不能超过10个
-        }else{
-            switch( trim($postObj->Content) ){
-                case 1:
-                    $content = '您输入的数字是1';
-                    break;
-                case 2:
-                    $content = '您输入的数字是2';
-                    break;
-                case 3:
-                    $content = '您输入的数字是3';
-                    break;
-                case 4:
-                    $content = "<a href='http://www.imooc.com'>慕课</a>";
-                    break;
-                case '英文':
-                    $content = 'imooc is ok';
-                    break;
-            }
-            $template = "<xml>
-                            <ToUserName><![CDATA[%s]]></ToUserName>
-                            <FromUserName><![CDATA[%s]]></FromUserName>
-                            <CreateTime>%s</CreateTime>
-                            <MsgType><![CDATA[%s]]></MsgType>
-                            <Content><![CDATA[%s]]></Content>
-                        </xml>";
-            //注意模板中的中括号 不能少 也不能多
-            $fromUser = $postObj->ToUserName;
-            $toUser   = $postObj->FromUserName;
-            $time     = time();
-            // $content  = '18723180099';
-            $msgType  = 'text';
-            echo sprintf($template, $toUser, $fromUser, $time, $msgType, $content);
-
-        }//if end
-    }//reponseMsg end
-
-    function http_curl(){
-        //获取imooc
-        //1.初始化curl
-        $ch = curl_init();
-        $url = 'http://www.baidu.com';
-        //2.设置curl的参数
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        //3.采集
-        $output = curl_exec($ch);
-        //4.关闭
-        curl_close($ch);
-        var_dump($output);
-
-//        $ch =curl_init();
-//        curl_setopt($ch,CURLOPT_URL,'www.baidu.com');
-//        curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
-//        curl_setopt($ch,CURLOPT_HEADER,0);
-//        $output = curl_exec($ch);
-//        curl_close($ch);
-//        echo $output;
+        
     }
 
-    function getWxAccessToken(){
-        //1.请求url地址
-        $appid = 'wx7ec8b0f510cb99d5';
-        $appsecret =  'L1vSKETAB28Si0dgzkfqnQwGx2PX6kTgBv4tpAYsb7c';
-        $url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=".$appid."&secret=".$appsecret;
-        //2初始化
-        $ch = curl_init();
-        //3.设置参数
-        curl_setopt($ch , CURLOPT_URL, $url);
-        curl_setopt($ch , CURLOPT_RETURNTRANSFER, 1);
-        //4.调用接口
-        $res = curl_exec($ch);
-        //5.关闭curl
-        curl_close( $ch );
-        if( curl_errno($ch) ){
-            var_dump( curl_error($ch) );
+    /**
+     * DEMO
+     * @param  Object $wechat Wechat对象
+     * @param  array  $data   接受到微信推送的消息
+     */
+    private function demo($wechat, $data){
+        switch ($data['MsgType']) {
+            case Wechat::MSG_TYPE_EVENT:
+                switch ($data['Event']) {
+                    case Wechat::MSG_EVENT_SUBSCRIBE:
+                        $wechat->replyText('欢迎您关注麦当苗儿公众平台！回复“文本”，“图片”，“语音”，“视频”，“音乐”，“图文”，“多图文”查看相应的信息！');
+                        break;
+
+                    case Wechat::MSG_EVENT_UNSUBSCRIBE:
+                        //取消关注，记录日志
+                        break;
+
+                    default:
+                        $wechat->replyText("欢迎访问麦当苗儿公众平台！您的事件类型：{$data['Event']}，EventKey：{$data['EventKey']}");
+                        break;
+                }
+                break;
+
+            case Wechat::MSG_TYPE_TEXT:
+                switch ($data['Content']) {
+                    case '文本':
+                        $wechat->replyText('欢迎访问麦当苗儿公众平台，这是文本回复的内容！');
+                        break;
+
+                    case '图片':
+                        //$media_id = $this->upload('image');
+                        $media_id = '1J03FqvqN_jWX6xe8F-VJr7QHVTQsJBS6x4uwKuzyLE';
+                        $wechat->replyImage($media_id);
+                        break;
+
+                    case '语音':
+                        //$media_id = $this->upload('voice');
+                        $media_id = '1J03FqvqN_jWX6xe8F-VJgisW3vE28MpNljNnUeD3Pc';
+                        $wechat->replyVoice($media_id);
+                        break;
+
+                    case '视频':
+                        //$media_id = $this->upload('video');
+                        $media_id = '1J03FqvqN_jWX6xe8F-VJn9Qv0O96rcQgITYPxEIXiQ';
+                        $wechat->replyVideo($media_id, '视频标题', '视频描述信息。。。');
+                        break;
+
+                    case '音乐':
+                        //$thumb_media_id = $this->upload('thumb');
+                        $thumb_media_id = '1J03FqvqN_jWX6xe8F-VJrjYzcBAhhglm48EhwNoBLA';
+                        $wechat->replyMusic(
+                            'Wakawaka!', 
+                            'Shakira - Waka Waka, MaxRNB - Your first R/Hiphop source', 
+                            'http://wechat.zjzit.cn/Public/music.mp3', 
+                            'http://wechat.zjzit.cn/Public/music.mp3', 
+                            $thumb_media_id
+                        ); //回复音乐消息
+                        break;
+
+                    case '图文':
+                        $wechat->replyNewsOnce(
+                            "全民创业蒙的就是你，来一盆冷水吧！",
+                            "全民创业已经如火如荼，然而创业是一个非常自我的过程，它是一种生活方式的选择。从外部的推动有助于提高创业的存活率，但是未必能够提高创新的成功率。第一次创业的人，至少90%以上都会以失败而告终。创业成功者大部分年龄在30岁到38岁之间，而且创业成功最高的概率是第三次创业。", 
+                            "http://www.topthink.com/topic/11991.html",
+                            "http://yun.topthink.com/Uploads/Editor/2015-07-30/55b991cad4c48.jpg"
+                        ); //回复单条图文消息
+                        break;
+
+                    case '多图文':
+                        $news = array(
+                            "全民创业蒙的就是你，来一盆冷水吧！",
+                            "全民创业已经如火如荼，然而创业是一个非常自我的过程，它是一种生活方式的选择。从外部的推动有助于提高创业的存活率，但是未必能够提高创新的成功率。第一次创业的人，至少90%以上都会以失败而告终。创业成功者大部分年龄在30岁到38岁之间，而且创业成功最高的概率是第三次创业。", 
+                            "http://www.topthink.com/topic/11991.html",
+                            "http://yun.topthink.com/Uploads/Editor/2015-07-30/55b991cad4c48.jpg"
+                        ); //回复单条图文消息
+
+                        $wechat->replyNews($news, $news, $news, $news, $news);
+                        break;
+                    
+                    default:
+                        $wechat->replyText("欢迎访问麦当苗儿公众平台！您输入的内容是：{$data['Content']}");
+                        break;
+                }
+                break;
+            
+            default:
+                # code...
+                break;
         }
-        $arr = json_decode($res, true);
-        var_dump( $arr );
     }
 
-    function getWxServerIp(){
-        $accessToken = "6vOlKOh7r5uWk_ZPCl3DS36NEK93VIH9Q9tacreuxJ5WzcVc235w_9zONy75NoO11gC9P0o4FBVxwvDiEtsdX6ZRFR0Lfs_ymkb8Bf6kRfo";
-        $url = "https://api.weixin.qq.com/cgi-bin/getcallbackip?access_token=".$accessToken;
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL,$url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
-        $res = curl_exec($ch);
-        curl_close($ch);
-        if(curl_errno($ch)){
-            var_dump(curl_error($ch));
+    /**
+     * 资源文件上传方法
+     * @param  string $type 上传的资源类型
+     * @return string       媒体资源ID
+     */
+    private function upload($type){
+        $appid     = 'wx58aebef2023e68cd';
+        $appsecret = 'bf818ec2fb49c20a478bbefe9dc88c60';
+
+        $token = session("token");
+
+        if($token){
+            $auth = new WechatAuth($appid, $appsecret, $token);
+        } else {
+            $auth  = new WechatAuth($appid, $appsecret);
+            $token = $auth->getAccessToken();
+
+            session(array('expire' => $token['expires_in']));
+            session("token", $token['access_token']);
         }
-        $arr = json_decode($res,true);
-        echo "<pre>";
-        var_dump( $arr );
-        echo "</pre>";
 
+        switch ($type) {
+            case 'image':
+                $filename = './Public/image.jpg';
+                $media    = $auth->materialAddMaterial($filename, $type);
+                break;
 
+            case 'voice':
+                $filename = './Public/voice.mp3';
+                $media    = $auth->materialAddMaterial($filename, $type);
+                break;
+
+            case 'video':
+                $filename    = './Public/video.mp4';
+                $discription = array('title' => '视频标题', 'introduction' => '视频描述');
+                $media       = $auth->materialAddMaterial($filename, $type, $discription);
+                break;
+
+            case 'thumb':
+                $filename = './Public/music.jpg';
+                $media    = $auth->materialAddMaterial($filename, $type);
+                break;
+            
+            default:
+                return '';
+        }
+
+        if($media["errcode"] == 42001){ //access_token expired
+            session("token", null);
+            $this->upload($type);
+        }
+
+        return $media['media_id'];
     }
 }
