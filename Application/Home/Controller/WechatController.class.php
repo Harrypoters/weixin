@@ -28,7 +28,7 @@ class WechatController extends BaseController
         $appid = 'wx783f04c3afcbb7ce';
         $appsecret = '46dc396984eedef3afb7b63ac843c67e';
         $code = $_GET['code'];
-      
+
         $url = 'https://api.weixin.qq.com/sns/oauth2/access\_token?appid='.$appid.'&secret='.$appsecret.'&code='.$code.'&grant\_type=authorization\_code';
 //        $url = ' https://api.weixin.qq.com/sns/oauth2/access\_token?appid='.$appid.'&secret='.$appsecret.'&code='.$code.'&grant\_type=authorization\_code';
 //        $url = ' https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$appsecret.'&code='.$code.'&grant_type=authorization\_code';
@@ -50,7 +50,8 @@ class WechatController extends BaseController
        $output = curl_exec($ch);
        curl_close($ch);
 
-       return json_decode($output, true);
+       return $output;
+//       return json_decode($output, true);
 //       curl_setopt($ch, CURLOPT_URL,$url);
 //
 //       curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
