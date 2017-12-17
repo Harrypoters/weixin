@@ -68,12 +68,10 @@ class WechatController extends BaseController
        $appid = 'wx783f04c3afcbb7ce';
        $appsecret = '46dc396984eedef3afb7b63ac843c67e';
        $code = $_GET['code'];
-       var_dum($appid);
-       var_dump($appsecret);
-       die($code);
+
        $url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$appsecret.'&code='.$code.'&grant_type=authorization_code';
        // todo 拉取用户的openid
-
+        die($url);
        $red = $this->http_curl($url, 'get');
 
 
