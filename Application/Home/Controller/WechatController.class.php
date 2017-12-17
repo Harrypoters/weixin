@@ -15,6 +15,6 @@ class WechatController extends BaseController
 {
    public function index()
    {
-
+        echo 'sad';
    }
 }
