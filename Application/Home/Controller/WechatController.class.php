@@ -17,7 +17,7 @@ class WechatController extends BaseController
    {
 
        $appid = 'wx783f04c3afcbb7ce';
-       $redirect_uri = urlencode('http://zsgtdc.cn/weixin/index.php/Home/Index/getUserOpenId');
+       $redirect_uri = urlencode('http://zsgtdc.cn/weixin/index.php/Home/wechat/getUserOpenId');
         //todo 获取到code
        $url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$appid.'&redirect_uri='.$redirect_uri.'&response_type=code&scope=snsapi_base&state=123#wechat_redirect';
 //       $url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=".$appid."&redirect\_uri=".$redirect_uri."&response\_type=code&scope=".snsapi_base."&state=123#wechat\_redirect';
@@ -26,7 +26,6 @@ class WechatController extends BaseController
 
    public function getUserOpenId()
    {
-       die('sad');
        // todo 获取到网页授权的access_token
         $appid = 'wx783f04c3afcbb7ce';
         $appsecret = '46dc396984eedef3afb7b63ac843c67e';
