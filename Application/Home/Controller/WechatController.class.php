@@ -26,6 +26,7 @@ class WechatController extends BaseController
 
    public function getUserOpenId()
    {
+       die('sad');
        // todo 获取到网页授权的access_token
         $appid = 'wx783f04c3afcbb7ce';
         $appsecret = '46dc396984eedef3afb7b63ac843c67e';
