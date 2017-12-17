@@ -7,6 +7,6 @@ return [
     'URL_ROUTE_RULES' => [
         // 易码旧数据转移脚本
         ['wechat/index$', 'wechat/index',  API_SECRET_PARAM.'='.API_SECRET_CODE, ['method' => 'get']],
-        ['wechat$', 'wechat/getUserOpenId',  API_SECRET_PARAM.'='.API_SECRET_CODE, ['method' => 'get']],
+        ['wechat/getUserOpenId$', 'wechat/getUserOpenId',  API_SECRET_PARAM.'='.API_SECRET_CODE, ['method' => 'get']],
     ]
 ];
