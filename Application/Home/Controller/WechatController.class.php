@@ -73,9 +73,7 @@ class WechatController extends BaseController
        // todo 拉取用户的openid
 
        $red = $this->http_curl($url, 'get');
-     
-       $red['access_token'];
-       $red['openid'];
+       
 
        $usr_info = 'https://api.weixin.qq.com/sns/userinfo?access_token='.$red['access_token'].'&openid='.$red['openid'].'&lang=zh_CN';
        $re = $this->http_curl($usr_info);
