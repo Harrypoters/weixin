@@ -19,7 +19,7 @@ class WechatController extends BaseController
        $appid = 'wx783f04c3afcbb7ce';
        $redirect_uri = urlencode('http://zsgtdc.cn/weixin/index.php/Home/Index/getUserOpenId');
         //todo 获取到code
-       $url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$appid.'&redirect\_uri='.$redirect_uri.'&response\_type=code&scope=snsapi_base&state=123#wechat\_redirect';
+       $url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$appid.'&redirect_uri='.$redirect_uri.'&response_type=code&scope=snsapi_base&state=123#wechat_redirect';
 //       $url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=".$appid."&redirect\_uri=".$redirect_uri."&response\_type=code&scope=".snsapi_base."&state=123#wechat\_redirect';
        header('location:'.$url);
    }
@@ -30,7 +30,8 @@ class WechatController extends BaseController
         $appid = 'wx783f04c3afcbb7ce';
         $appsecret = '46dc396984eedef3afb7b63ac843c67e';
         $code = $_GET['code'];
-        $url = ' https://api.weixin.qq.com/sns/oauth2/access\_token?appid='.$appid.'&secret='.$appsecret.'&code='.$code.'&grant\_type=authorization\_code';
+//        $url = ' https://api.weixin.qq.com/sns/oauth2/access\_token?appid='.$appid.'&secret='.$appsecret.'&code='.$code.'&grant\_type=authorization\_code';
+        $url = ' https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$appsecret.'&code='.$code.'&grant_type=authorization\_code';
        // todo 拉取用户的openid
 
        $res = $this->http_curl($url, 'get');
