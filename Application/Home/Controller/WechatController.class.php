@@ -73,7 +73,7 @@ class WechatController extends BaseController
        // todo 拉取用户的openid
 
        $red = $this->http_curl($url, 'get');
-
+       die($red);
        $red['access_token'];
        $red['openid'];
 
