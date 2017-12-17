@@ -33,24 +33,34 @@ class WechatController extends BaseController
 //        $url = ' https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$appsecret.'&code='.$code.'&grant_type=authorization\_code';
        // todo 拉取用户的openid
 
-       $res = $this->http_curl($url, 'get');
+       $res = $this->http_curl($url);
 
        var_dump($res);
    }
 
-   public function http_curl($url = null,$ch = null)
+   public function http_curl($url = null)
    {
-       curl_setopt($ch, CURLOPT_URL,$url);
 
-       curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
-
-       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,0);
-
-       $data = curl_exec($ch);
-
+       $ch = curl_init();
+       curl_setopt($ch, CURLOPT_URL, $url);
+       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+       curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+       $output = curl_exec($ch);
        curl_close($ch);
 
-       return $data;
+       return $output;
+//       curl_setopt($ch, CURLOPT_URL,$url);
+//
+//       curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+//
+//       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,0);
+//
+//       $data = curl_exec($ch);
+//
+//       curl_close($ch);
+//
+//       return $data;
 //       echo $data.openid;
    }
 
