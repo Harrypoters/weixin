@@ -22,8 +22,13 @@ class WechatController extends BaseController
 //       $url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$appid.'&redirect_uri='.$redirect_uri.'&response_type=code&scope=snsapi_base&state=123#wechat_redirect';
 //       $url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$appid.'&redirect\_uri='.$redirect_uri.'&response\_type=code&scope=snsapi_base&state=123#wechat\_redirect';
 //       $url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=".$appid."&redirect\_uri=".$redirect_uri."&response\_type=code&scope=".snsapi_base."&state=123#wechat\_redirect';
-       $url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$appid.'&redirect\_uri='.$redirect_uri.'&response\_type=code&scope=snsapi\_base&state=123#wechat\_redirect';
-       header('location:'.$url);
+//       $url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$appid.'&redirect\_uri='.$redirect_uri.'&response\_type=code&scope=snsapi\_base&state=123#wechat\_redirect';
+//       header('location:'.$url);
+
+       $appid='wx783f04c3afcbb7ce';
+       $redirect_uri = urlencode ( 'http://zsgtdc.cn/weixin/index.php/Home/wechat/getUserOpenId' );
+       $url ="https://open.weixin.qq.com/connect/oauth2/authorize?appid=$appid&redirect_uri=$redirect_uri&response_type=code&scope=snsapi_base&state=1#wechat_redirect";
+       header("Location:".$url);
    }
 
    public function getUserOpenId()
