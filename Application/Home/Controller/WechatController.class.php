@@ -67,13 +67,13 @@ class WechatController extends BaseController
        // todo 获取到网页授权的access_token
        $appid = 'wx783f04c3afcbb7ce';
        $appsecret = '46dc396984eedef3afb7b63ac843c67e';
-       $code = $_GET['code'];
+       $code = $_GET['response_type'];
 
        $url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$appsecret.'&code='.$code.'&grant_type=authorization_code';
        // todo 拉取用户的openid
 
        $red = $this->http_curl($url, 'get');
-       die($red);
+     
        $red['access_token'];
        $red['openid'];
 
