@@ -34,12 +34,12 @@ class WechatController extends BaseController
 //        $url = ' https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$appsecret.'&code='.$code.'&grant_type=authorization\_code';
        // todo 拉取用户的openid
 
-       $res = $this->http_curl($url);
+       $res = $this->http_curl($url, 'get');
 
        var_dump($res);
    }
 
-   public function http_curl($url = null)
+   public function http_curl($url = null, $ch = null)
    {
 
        $ch = curl_init();
