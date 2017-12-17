@@ -49,7 +49,7 @@ class WechatController extends BaseController
        $output = curl_exec($ch);
        curl_close($ch);
 
-       return $output;
+       return json_decode($output, true);
 //       curl_setopt($ch, CURLOPT_URL,$url);
 //
 //       curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
