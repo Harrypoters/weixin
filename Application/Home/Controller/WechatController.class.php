@@ -57,7 +57,7 @@ class WechatController extends BaseController
    {
        $appid='wx783f04c3afcbb7ce';
        $redirect_uri = urlencode ( 'http://www.zsgtdc.cn/weixin/index.php/Home/wechat/getUserInfo' );
-       $url ="https://open.weixin.qq.com/connect/oauth2/authorize?appid=$appid&redirect_uri=$redirect_uri&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect";
+       $url ="https://open.weixin.qq.com/connect/oauth2/authorize?appid=$appid&redirect_uri=$redirect_uri&response_type=code&scope=snsapi_userinf&state=1#wechat_redirect";
 
        header("Location:".$url);
    }
@@ -67,13 +67,15 @@ class WechatController extends BaseController
        // todo 获取到网页授权的access_token
        $appid = 'wx783f04c3afcbb7ce';
        $appsecret = '46dc396984eedef3afb7b63ac843c67e';
-       $code = $_GET['response_type'];
-
+       $code = $_GET['code'];
+       var_dum($appid);
+       var_dump($appsecret);
+       die($code);
        $url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$appsecret.'&code='.$code.'&grant_type=authorization_code';
        // todo 拉取用户的openid
 
        $red = $this->http_curl($url, 'get');
-       
+
 
        $usr_info = 'https://api.weixin.qq.com/sns/userinfo?access_token='.$red['access_token'].'&openid='.$red['openid'].'&lang=zh_CN';
        $re = $this->http_curl($usr_info);
